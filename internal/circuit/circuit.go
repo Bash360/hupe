@@ -11,19 +11,19 @@ const (
 type CircuitBreaker struct {
 	state         int
 	threshold     float64
-	slidingWindow []bool
+	slidingWindow []error
 	timeOut       time.Duration
-	fallBack func 
-	
+	fallBack      interface{}
 }
 
-func NewCircuitBreaker() *CircuitBreaker {
+func New(fallBack interface{}, args ...interface{}) *CircuitBreaker {
 
 	return &CircuitBreaker{
 		state:         Open,
 		threshold:     0.5,
-		slidingWindow: make([]bool, 10),
+		slidingWindow: make([]error, 0, 10),
 		timeOut:       time.Duration(time.Second * 10),
+		fallBack:      fallBack,
 	}
 
 }
