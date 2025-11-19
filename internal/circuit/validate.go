@@ -1,3 +1,7 @@
 package circuit
 
-func validateCallback(callback interface{}) error {}
+import "errors"
+
+func validateFallback(callback interface{}) error {
+	return errors.New("error")
+}
