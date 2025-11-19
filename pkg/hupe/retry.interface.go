@@ -1,11 +1,9 @@
 package hupe
 
-import "github.com/bash360/hupe/internal/retry"
-
 type IRetry interface {
-	SetInterval(interval uint) *retry.Retry
+	SetInterval(interval uint) IRetry
 
-	SetCount(count uint) *retry.Retry
+	SetCount(count uint) IRetry
 
 	Execute() ([]any, error)
 }
