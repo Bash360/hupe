@@ -1,6 +1,5 @@
 package hupe
 
-
-type Hupe struct{
-	
+type Hupe struct {
+	IRetry
 }
