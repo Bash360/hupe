@@ -47,16 +47,37 @@ func TestConstructor(t *testing.T) {
 			want{nil, &Retry{}},
 			false,
 		},
+
+		{
+			"Test constructor with correct implementing function and return type but mismatching argument and parameters",
+			input{[]any{"tobi", 16}, func(name string) error {
+
+				return errors.New("returns an error")
+			}},
+			want{ErrArgumentSize, &Retry{}},
+			true,
+		},
+
+		{
+			"Test constructor with correct implementing function and return type but mismatching argument and parameters type",
+			input{[]any{"tobi", 16}, func(a int, b int) error {
+
+				return errors.New("returns an error")
+			}},
+			want{ErrUnassignableArgument, &Retry{}},
+			true,
+		},
 	}
 
 	for _, v := range tests {
 		_, err := New(v.input.operation, v.input.args...)
 
 		if !errors.Is(v.want.err, err) {
-			t.Errorf("constructor  %s", v.name)
+			t.Errorf("constructor Error %s", v.name)
+			continue
 		}
 
-		t.Logf("constructor  %s", v.name)
+		t.Logf("constructor success %s", v.name)
 
 	}
 }
