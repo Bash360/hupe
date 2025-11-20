@@ -24,6 +24,12 @@ func New(operation interface{}, args ...any) (*Retry, error) {
 		return nil, err
 	}
 
+	err = validateArgs(operation, args...)
+
+	if err != nil {
+		return nil, err
+	}
+
 	return &Retry{
 		interval: time.Millisecond * 5,
 		count:    4,

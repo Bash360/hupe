@@ -27,3 +27,21 @@ func validateFunc(function interface{}) error {
 
 	return nil
 }
+
+func validateArgs(operation any, args ...any) error {
+	opV := reflect.ValueOf(operation)
+	opT := opV.Type()
+	if opT.NumIn() != len(args) {
+		return ErrArgumentSize
+	}
+
+	for i, arg := range args {
+		actual := reflect.TypeOf(arg)
+		if !(actual.AssignableTo(opT.In(i))) {
+			return ErrUnassignableArgument
+		}
+
+	}
+
+	return nil
+}
