@@ -53,7 +53,7 @@ func TestConstructor(t *testing.T) {
 		_, err := New(v.input.operation, v.input.args...)
 
 		if !errors.Is(v.want.err, err) {
-			t.Fatalf("constructor  %s", v.name)
+			t.Errorf("constructor  %s", v.name)
 		}
 
 		t.Logf("constructor  %s", v.name)
