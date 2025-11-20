@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/bash360/hupe/pkg/apperror"
+	"github.com/bash360/hupe/pkg/hupe"
 	"github.com/bash360/hupe/pkg/utils"
 )
 
@@ -30,12 +31,12 @@ func New(operation interface{}, args ...any) (*Retry, error) {
 	}, nil
 }
 
-func (r *Retry) SetInterval(interval uint) *Retry {
+func (r *Retry) SetInterval(interval uint) hupe.IRetry {
 	r.interval = time.Millisecond * time.Duration(interval)
 	return r
 }
 
-func (r *Retry) SetCount(count uint) *Retry {
+func (r *Retry) SetCount(count uint) hupe.IRetry {
 	r.count = count
 	return r
 }
