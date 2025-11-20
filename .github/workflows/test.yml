@@ -12,6 +12,8 @@ jobs:
   retry:
 
     runs-on: ubuntu-latest
+    steps:
+      -  run: echo "Hello"
 
 
 
@@ -23,6 +25,8 @@ jobs:
   circuit:
 
     runs-on: ubuntu-latest
+    steps:
+      -  run: echo "Hello"
 
 
 
