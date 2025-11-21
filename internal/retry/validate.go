@@ -29,6 +29,7 @@ func validateFunc(function interface{}) error {
 }
 
 func validateArgs(operation any, args ...any) error {
+
 	opV := reflect.ValueOf(operation)
 	opT := opV.Type()
 	if opT.NumIn() != len(args) {

@@ -31,7 +31,7 @@ func New(operation interface{}, args ...any) (*Retry, error) {
 	}
 
 	return &Retry{
-		interval: time.Millisecond * 5,
+		interval: time.Millisecond * 500,
 		count:    4,
 		args:     args,
 	}, nil
