@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/bash360/hupe/pkg/hupe"
 )
@@ -81,3 +82,25 @@ func TestConstructor(t *testing.T) {
 
 	}
 }
+
+func TestSetInterval(t *testing.T) {
+	r, err := New(func() error { return errors.New("dummy error") })
+	
+	if err != nil {
+		t.Errorf("Set Interval test failed %s", err.Error())
+		return
+	}
+	r.SetInterval(300)
+
+	if r.interval != time.Millisecond*time.Duration(300) {
+		t.Errorf("Set interval test method is not working properly ")
+		return
+	}
+
+	t.Logf("setInterval success")
+
+}
+
+func TestSetCount(t *testing.T) {}
+
+func TestExecute(t *testing.T) {}
