@@ -78,14 +78,12 @@ func TestConstructor(t *testing.T) {
 			continue
 		}
 
-		t.Logf("constructor success %s", v.name)
-
 	}
 }
 
 func TestSetInterval(t *testing.T) {
 	r, err := New(func() error { return errors.New("dummy error") })
-	
+
 	if err != nil {
 		t.Errorf("Set Interval test failed %s", err.Error())
 		return
@@ -93,14 +91,27 @@ func TestSetInterval(t *testing.T) {
 	r.SetInterval(300)
 
 	if r.interval != time.Millisecond*time.Duration(300) {
-		t.Errorf("Set interval test method is not working properly ")
+		t.Error("Set interval test method is not working properly ")
 		return
 	}
 
-	t.Logf("setInterval success")
-
 }
 
-func TestSetCount(t *testing.T) {}
+func TestSetCount(t *testing.T) {
+	r, err := New(func() error { return errors.New("dummy error") })
+
+	if err != nil {
+		t.Errorf("Set Count test failed %s", err.Error())
+		return
+	}
+
+	r.SetCount(5)
+
+	if r.count != 5 {
+		t.Error("Set Count error: count specified with set count and value in struct differ")
+		return
+	}
+
+}
 
 func TestExecute(t *testing.T) {}
