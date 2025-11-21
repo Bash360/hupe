@@ -1,7 +1,6 @@
 package retry
 
 import (
-	"log"
 	"reflect"
 )
 
