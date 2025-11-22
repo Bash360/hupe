@@ -89,9 +89,9 @@ func TestSetInterval(t *testing.T) {
 		t.Errorf("Set Interval test failed %s", err.Error())
 		return
 	}
-	r.SetInterval(300)
+	r.SetDelay(300)
 
-	if r.interval != time.Millisecond*time.Duration(300) {
+	if r.delay != time.Millisecond*time.Duration(300) {
 		t.Error("Set interval test method is not working properly ")
 		return
 	}
