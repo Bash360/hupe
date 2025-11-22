@@ -1,7 +1,7 @@
 package hupe
 
 type IRetry interface {
-	SetInterval(interval uint) IRetry
+	SetDelay(delay uint) IRetry
 
 	SetCount(count uint) IRetry
 
