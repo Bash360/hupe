@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/bash360/hupe/pkg/apperror"
 	"github.com/bash360/hupe/pkg/hupe"
 )
 
@@ -114,4 +115,48 @@ func TestSetCount(t *testing.T) {
 
 }
 
-func TestExecute(t *testing.T) {}
+func TestExecute(t *testing.T) {
+
+	fn := func() func() (string, error) {
+		count := 0
+		var err error = nil
+		var result string = ""
+		return func() (string, error) {
+
+			switch count {
+			case 0:
+				err = apperror.Transient{Err: errors.New("Server not ready 1")}
+			case 1:
+				err = apperror.Transient{Err: errors.New("Server not ready 2")}
+			case 2:
+				err = apperror.Transient{Err: errors.New("Server not ready 3")}
+			case 3:
+				err = apperror.Transient{Err: errors.New("Server not ready 4")}
+			default:
+				err = nil
+				result = "success"
+
+			}
+			count++
+
+			return result, err
+
+		}
+	}
+
+	r, err := New(fn())
+
+	if err != nil {
+		t.Log("Test Execute failing: ", err.Error())
+	}
+
+	payload, err := r.Execute()
+
+	if err != nil {
+
+		t.Errorf("Test Execute failing: %s", err.Error())
+	}
+
+	t.Log(payload)
+
+}

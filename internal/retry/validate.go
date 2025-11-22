@@ -8,7 +8,7 @@ func validateFunc(function interface{}) error {
 	var functionValue reflect.Value = reflect.ValueOf(function)
 	var functionType reflect.Type = functionValue.Type()
 
-	if functionValue.Kind() != reflect.Func {
+	if functionValue.IsValid() && functionValue.Kind() != reflect.Func {
 		return ErrNotAFunction
 	}
 
