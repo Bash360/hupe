@@ -1,13 +1,13 @@
 package apperror
 
 type NonTransient struct {
-	err error
+	Err error
 }
 
 func (n NonTransient) Error() string {
-	return n.err.Error()
+	return n.Err.Error()
 }
 
 func (n NonTransient) Unwrap() error {
-	return n.err
+	return n.Err
 }

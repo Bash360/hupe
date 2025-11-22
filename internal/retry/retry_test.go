@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/bash360/hupe/pkg/apperror"
 	"github.com/bash360/hupe/pkg/hupe"
 )
 
@@ -78,14 +79,12 @@ func TestConstructor(t *testing.T) {
 			continue
 		}
 
-		t.Logf("constructor success %s", v.name)
-
 	}
 }
 
 func TestSetInterval(t *testing.T) {
 	r, err := New(func() error { return errors.New("dummy error") })
-	
+
 	if err != nil {
 		t.Errorf("Set Interval test failed %s", err.Error())
 		return
@@ -93,14 +92,71 @@ func TestSetInterval(t *testing.T) {
 	r.SetInterval(300)
 
 	if r.interval != time.Millisecond*time.Duration(300) {
-		t.Errorf("Set interval test method is not working properly ")
+		t.Error("Set interval test method is not working properly ")
 		return
 	}
 
-	t.Logf("setInterval success")
+}
+
+func TestSetCount(t *testing.T) {
+	r, err := New(func() error { return errors.New("dummy error") })
+
+	if err != nil {
+		t.Errorf("Set Count test failed %s", err.Error())
+		return
+	}
+
+	r.SetCount(5)
+
+	if r.count != 5 {
+		t.Error("Set Count error: count specified with set count and value in struct differ")
+		return
+	}
 
 }
 
-func TestSetCount(t *testing.T) {}
+func TestExecute(t *testing.T) {
 
-func TestExecute(t *testing.T) {}
+	fn := func() func() (string, error) {
+		count := 0
+		var err error = nil
+		var result string = ""
+		return func() (string, error) {
+
+			switch count {
+			case 0:
+				err = apperror.Transient{Err: errors.New("Server not ready 1")}
+			case 1:
+				err = apperror.Transient{Err: errors.New("Server not ready 2")}
+			case 2:
+				err = apperror.Transient{Err: errors.New("Server not ready 3")}
+			case 3:
+				err = apperror.Transient{Err: errors.New("Server not ready 4")}
+			default:
+				err = nil
+				result = "success"
+
+			}
+			count++
+
+			return result, err
+
+		}
+	}
+
+	r, err := New(fn())
+
+	if err != nil {
+		t.Log("Test Execute failing: ", err.Error())
+	}
+
+	payload, err := r.Execute()
+
+	if err != nil {
+
+		t.Errorf("Test Execute failing: %s", err.Error())
+	}
+
+	t.Log(payload)
+
+}

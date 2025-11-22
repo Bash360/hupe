@@ -31,9 +31,10 @@ func New(operation interface{}, args ...any) (*Retry, error) {
 	}
 
 	return &Retry{
-		interval: time.Millisecond * 500,
-		count:    4,
-		args:     args,
+		operation: operation,
+		interval:  time.Millisecond * 500,
+		count:     4,
+		args:      args,
 	}, nil
 }
 
@@ -50,7 +51,7 @@ func (r *Retry) SetCount(count uint) hupe.IRetry {
 func (r *Retry) Execute() ([]any, error) {
 
 	operation := reflect.ValueOf(r.operation)
-	var args []reflect.Value
+	args := make([]reflect.Value, 0)
 	if r.args != nil {
 		for _, v := range r.args {
 			args = append(args, reflect.ValueOf(v))
@@ -58,12 +59,18 @@ func (r *Retry) Execute() ([]any, error) {
 	}
 
 	var err error
-	var returnValues []reflect.Value
+	returnValues := make([]reflect.Value, 0)
 
 	for i := 0; i <= int(r.count); i++ {
 
 		returnValues = operation.Call(args)
-		err = returnValues[len(returnValues)-1].Interface().(error)
+		returnedErr := returnValues[len(returnValues)-1].Interface()
+		
+		if returnedErr != nil {
+			err = returnedErr.(error)
+		} else {
+			err = nil
+		}
 
 		if err == nil || errors.As(err, &apperror.NonTransient{}) {
 			break

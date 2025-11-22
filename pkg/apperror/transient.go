@@ -1,13 +1,13 @@
 package apperror
 
 type Transient struct {
-	err error
+	Err error
 }
 
 func (t Transient) Error() string {
-	return t.err.Error()
+	return t.Err.Error()
 }
 
 func (t Transient) Unwrap() error {
-	return t.err
+	return t.Err
 }
