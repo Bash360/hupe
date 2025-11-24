@@ -29,7 +29,7 @@ func TestConstructor(t *testing.T) {
 		{
 			"Test constructor with wrong type input",
 			input{nil, "wrong input"},
-			want{ErrNotAFunction, nil},
+			want{apperror.ErrNotAFunction, nil},
 			true,
 		},
 		{
@@ -56,7 +56,7 @@ func TestConstructor(t *testing.T) {
 
 				return errors.New("returns an error")
 			}},
-			want{ErrArgumentSize, &Retry{}},
+			want{apperror.ErrArgumentSize, &Retry{}},
 			true,
 		},
 
@@ -66,7 +66,7 @@ func TestConstructor(t *testing.T) {
 
 				return errors.New("returns an error")
 			}},
-			want{ErrUnassignableArgument, &Retry{}},
+			want{apperror.ErrUnassignableArgument, &Retry{}},
 			true,
 		},
 	}
