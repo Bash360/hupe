@@ -2,6 +2,8 @@ package retry
 
 import (
 	"reflect"
+
+	"github.com/bash360/hupe/pkg/apperror"
 )
 
 func validateFunc(function interface{}) error {
@@ -9,7 +11,7 @@ func validateFunc(function interface{}) error {
 	var functionType reflect.Type = functionValue.Type()
 
 	if functionValue.IsValid() && functionValue.Kind() != reflect.Func {
-		return ErrNotAFunction
+		return apperror.ErrNotAFunction
 	}
 
 	numOut := functionType.NumOut()
@@ -23,25 +25,6 @@ func validateFunc(function interface{}) error {
 
 	if !errorT.Implements(errorType) {
 		return ErrInvalidReturn
-	}
-
-	return nil
-}
-
-func validateArgs(operation any, args ...any) error {
-
-	opV := reflect.ValueOf(operation)
-	opT := opV.Type()
-	if opT.NumIn() != len(args) {
-		return ErrArgumentSize
-	}
-
-	for i, arg := range args {
-		actual := reflect.TypeOf(arg)
-		if !(actual.AssignableTo(opT.In(i))) {
-			return ErrUnassignableArgument
-		}
-
 	}
 
 	return nil

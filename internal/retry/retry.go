@@ -24,7 +24,7 @@ func New(fn interface{}, args ...any) (*Retry, error) {
 		return nil, err
 	}
 
-	err = validateArgs(fn, args...)
+	err = utils.ValidateArgs(fn, args...)
 
 	if err != nil {
 		return nil, err
