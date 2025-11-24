@@ -51,11 +51,10 @@ func (r *Retry) SetCount(count uint) hupe.IRetry {
 func (r *Retry) Execute() ([]any, error) {
 
 	operation := reflect.ValueOf(r.fn)
-	args := make([]reflect.Value, 0)
-	if r.args != nil {
-		for _, v := range r.args {
-			args = append(args, reflect.ValueOf(v))
-		}
+	args := make([]reflect.Value, len(r.args))
+
+	for i, v := range r.args {
+		args[i] = reflect.ValueOf(v)
 	}
 
 	var err error
