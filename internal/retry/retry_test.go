@@ -82,14 +82,14 @@ func TestConstructor(t *testing.T) {
 	}
 }
 
-func TestSetInterval(t *testing.T) {
+func TestWithDelay(t *testing.T) {
 	r, err := New(func() error { return errors.New("dummy error") })
 
 	if err != nil {
 		t.Errorf("Set Interval test failed %s", err.Error())
 		return
 	}
-	r.SetDelay(300)
+	r.WithDelay(300)
 
 	if r.delay != time.Millisecond*time.Duration(300) {
 		t.Error("Set interval test method is not working properly ")
@@ -98,7 +98,7 @@ func TestSetInterval(t *testing.T) {
 
 }
 
-func TestSetCount(t *testing.T) {
+func TestWithCount(t *testing.T) {
 	r, err := New(func() error { return errors.New("dummy error") })
 
 	if err != nil {
@@ -106,7 +106,7 @@ func TestSetCount(t *testing.T) {
 		return
 	}
 
-	r.SetCount(5)
+	r.WithCount(5)
 
 	if r.count != 5 {
 		t.Error("Set Count error: count specified with set count and value in struct differ")

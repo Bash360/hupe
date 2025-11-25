@@ -38,12 +38,12 @@ func New(fn interface{}, args ...any) (*Retry, error) {
 	}, nil
 }
 
-func (r *Retry) SetDelay(millisecond uint) hupe.IRetry {
+func (r *Retry) WithDelay(millisecond uint) hupe.IRetry {
 	r.delay = time.Millisecond * time.Duration(millisecond)
 	return r
 }
 
-func (r *Retry) SetCount(count uint) hupe.IRetry {
+func (r *Retry) WithCount(count uint) hupe.IRetry {
 	r.count = count
 	return r
 }
