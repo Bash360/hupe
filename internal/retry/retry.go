@@ -1,11 +1,9 @@
 package retry
 
 import (
-	"errors"
-	"reflect"
 	"time"
 
-	"github.com/bash360/hupe/pkg/apperror"
+	"github.com/bash360/hupe/internal/shared"
 	"github.com/bash360/hupe/pkg/hupe"
 	"github.com/bash360/hupe/pkg/utils"
 )
@@ -50,38 +48,7 @@ func (r *Retry) WithCount(count uint) hupe.IRetry {
 
 func (r *Retry) Execute() ([]any, error) {
 
-	operation := reflect.ValueOf(r.fn)
-	args := make([]reflect.Value, len(r.args))
-
-	for i, v := range r.args {
-		args[i] = reflect.ValueOf(v)
-	}
-
-	var err error
-	returnValues := make([]reflect.Value, 0)
-
-	for i := 0; i <= int(r.count); i++ {
-
-		returnValues = operation.Call(args)
-		returnedErr := returnValues[len(returnValues)-1].Interface()
-
-		if returnedErr != nil {
-			err = returnedErr.(error)
-		} else {
-			err = nil
-		}
-
-		if err == nil || errors.As(err, &apperror.NonTransient{}) {
-			break
-		}
-
-		if errors.As(err, &apperror.Transient{}) {
-			time.Sleep(r.delay)
-		}
-
-	}
-
-	payload := utils.ValueToInterface(returnValues[:len(returnValues)-1])
+	payload, err := shared.Execute(shared.RetryPolicy{Delay: r.delay, Count: int(r.count)}, r.fn, r.args...)
 
 	return payload, err
 
