@@ -9,10 +9,9 @@ import (
 )
 
 type Retry struct {
-	delay time.Duration
-	count uint
-	fn    interface{}
-	args  []any
+	delay     time.Duration
+	count     uint
+	operation *shared.Operation
 }
 
 func New(fn interface{}, args ...any) (*Retry, error) {
@@ -29,10 +28,9 @@ func New(fn interface{}, args ...any) (*Retry, error) {
 	}
 
 	return &Retry{
-		fn:    fn,
-		delay: time.Millisecond * 500,
-		count: 4,
-		args:  args,
+		operation: &shared.Operation{Fn: fn, Args: args},
+		delay:     time.Millisecond * 500,
+		count:     4,
 	}, nil
 }
 
@@ -48,7 +46,7 @@ func (r *Retry) WithCount(count uint) hupe.IRetry {
 
 func (r *Retry) Execute() ([]any, error) {
 
-	payload, err := shared.Execute(shared.RetryPolicy{Delay: r.delay, Count: int(r.count)}, r.fn, r.args...)
+	payload, err := shared.Execute(shared.RetryPolicy{Delay: r.delay, Count: int(r.count)}, r.operation.Fn, r.operation.Args...)
 
 	return payload, err
 
