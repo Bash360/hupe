@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/bash360/hupe/internal/shared"
 	"github.com/bash360/hupe/pkg/apperror"
 	"github.com/bash360/hupe/pkg/hupe"
 )
@@ -72,7 +73,7 @@ func TestConstructor(t *testing.T) {
 	}
 
 	for _, v := range tests {
-		_, err := New(v.input.operation, v.input.args...)
+		_, err := New(&shared.Operation{Fn: v.input.operation, Args: v.input.args})
 
 		if !errors.Is(v.want.err, err) {
 			t.Errorf("constructor Error %s", v.name)
@@ -83,7 +84,7 @@ func TestConstructor(t *testing.T) {
 }
 
 func TestWithDelay(t *testing.T) {
-	r, err := New(func() error { return errors.New("dummy error") })
+	r, err := New(&shared.Operation{Fn: func() error { return errors.New("dummy error") }})
 
 	if err != nil {
 		t.Errorf("Set Interval test failed %s", err.Error())
@@ -99,7 +100,7 @@ func TestWithDelay(t *testing.T) {
 }
 
 func TestWithCount(t *testing.T) {
-	r, err := New(func() error { return errors.New("dummy error") })
+	r, err := New(&shared.Operation{Fn: func() error { return errors.New("dummy error") }})
 
 	if err != nil {
 		t.Errorf("Set Count test failed %s", err.Error())
@@ -144,7 +145,7 @@ func TestExecute(t *testing.T) {
 		}
 	}
 
-	r, err := New(fn())
+	r, err := New(&shared.Operation{Fn: fn()})
 
 	if err != nil {
 		t.Log("Test Execute failing: ", err.Error())

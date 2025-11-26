@@ -14,21 +14,21 @@ type Retry struct {
 	operation *shared.Operation
 }
 
-func New(fn interface{}, args ...any) (*Retry, error) {
+func New(operation *shared.Operation) (*Retry, error) {
 
-	err := validateFunc(fn)
+	err := validateFunc(operation.Fn)
 	if err != nil {
 		return nil, err
 	}
 
-	err = utils.ValidateArgs(fn, args...)
+	err = utils.ValidateArgs(operation.Fn, operation.Args...)
 
 	if err != nil {
 		return nil, err
 	}
 
 	return &Retry{
-		operation: &shared.Operation{Fn: fn, Args: args},
+		operation: operation,
 		delay:     time.Millisecond * 500,
 		count:     4,
 	}, nil
