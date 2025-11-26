@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/bash360/hupe/internal/shared"
 	"github.com/bash360/hupe/pkg/apperror"
 	"github.com/bash360/hupe/pkg/hupe"
 )
@@ -37,7 +38,7 @@ func TestConstructor(t *testing.T) {
 			input{[]any{"mark bashir"}, func(name string) {
 				fmt.Println(name)
 			}},
-			want{ErrNoReturn, nil},
+			want{apperror.ErrNoReturn, nil},
 			true,
 		},
 		{
@@ -72,7 +73,7 @@ func TestConstructor(t *testing.T) {
 	}
 
 	for _, v := range tests {
-		_, err := New(v.input.operation, v.input.args...)
+		_, err := New(&shared.Operation{Fn: v.input.operation, Args: v.input.args})
 
 		if !errors.Is(v.want.err, err) {
 			t.Errorf("constructor Error %s", v.name)
@@ -82,14 +83,14 @@ func TestConstructor(t *testing.T) {
 	}
 }
 
-func TestSetInterval(t *testing.T) {
-	r, err := New(func() error { return errors.New("dummy error") })
+func TestWithDelay(t *testing.T) {
+	r, err := New(&shared.Operation{Fn: func() error { return errors.New("dummy error") }})
 
 	if err != nil {
 		t.Errorf("Set Interval test failed %s", err.Error())
 		return
 	}
-	r.SetDelay(300)
+	r.WithDelay(300)
 
 	if r.delay != time.Millisecond*time.Duration(300) {
 		t.Error("Set interval test method is not working properly ")
@@ -98,15 +99,15 @@ func TestSetInterval(t *testing.T) {
 
 }
 
-func TestSetCount(t *testing.T) {
-	r, err := New(func() error { return errors.New("dummy error") })
+func TestWithCount(t *testing.T) {
+	r, err := New(&shared.Operation{Fn: func() error { return errors.New("dummy error") }})
 
 	if err != nil {
 		t.Errorf("Set Count test failed %s", err.Error())
 		return
 	}
 
-	r.SetCount(5)
+	r.WithCount(5)
 
 	if r.count != 5 {
 		t.Error("Set Count error: count specified with set count and value in struct differ")
@@ -144,7 +145,7 @@ func TestExecute(t *testing.T) {
 		}
 	}
 
-	r, err := New(fn())
+	r, err := New(&shared.Operation{Fn: fn()})
 
 	if err != nil {
 		t.Log("Test Execute failing: ", err.Error())

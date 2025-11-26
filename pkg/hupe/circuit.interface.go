@@ -2,6 +2,7 @@ package hupe
 
 type ICircuit interface {
 	CheckErrRate()
-	SetThreshold() ICircuit
-	SetTimeout() ICircuit
+	Fallback() []any
+	SetState(state int)
+	AddError(err error)
 }
