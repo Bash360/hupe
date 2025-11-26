@@ -16,7 +16,7 @@ type Retry struct {
 
 func New(operation *shared.Operation) (*Retry, error) {
 
-	err := validateFunc(operation.Fn)
+	err := utils.ValidateFunc(operation.Fn)
 	if err != nil {
 		return nil, err
 	}
