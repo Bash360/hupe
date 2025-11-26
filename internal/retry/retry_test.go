@@ -38,7 +38,7 @@ func TestConstructor(t *testing.T) {
 			input{[]any{"mark bashir"}, func(name string) {
 				fmt.Println(name)
 			}},
-			want{ErrNoReturn, nil},
+			want{apperror.ErrNoReturn, nil},
 			true,
 		},
 		{
