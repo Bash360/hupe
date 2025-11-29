@@ -4,7 +4,7 @@ import (
 	"time"
 
 	"github.com/bash360/hupe/internal/shared"
-	"github.com/bash360/hupe/pkg/hupe"
+	hupeI "github.com/bash360/hupe/pkg/hupe/interface"
 	"github.com/bash360/hupe/pkg/utils"
 )
 
@@ -34,12 +34,12 @@ func New(operation *shared.Operation) (*Retry, error) {
 	}, nil
 }
 
-func (r *Retry) WithDelay(millisecond uint) hupe.IRetry {
+func (r *Retry) WithDelay(millisecond uint) hupeI.IRetry {
 	r.delay = time.Millisecond * time.Duration(millisecond)
 	return r
 }
 
-func (r *Retry) WithCount(count uint) hupe.IRetry {
+func (r *Retry) WithCount(count uint) hupeI.IRetry {
 	r.count = count
 	return r
 }
