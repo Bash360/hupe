@@ -1,8 +1,6 @@
 package hupeI
 
 type ICircuit interface {
-	CheckErrRate()
-	Fallback() []any
+	SetFallback() []any
 	SetState(state int)
-	AddError(err error)
 }
