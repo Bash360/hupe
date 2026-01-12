@@ -5,34 +5,32 @@ import (
 
 	"github.com/bash360/hupe/internal/circuit"
 	"github.com/bash360/hupe/internal/retry"
-	"github.com/bash360/hupe/internal/shared"
 	hupeI "github.com/bash360/hupe/pkg/hupe/interface"
 )
 
 type Hupe struct {
 	circuit hupeI.ICircuit
 	retry   hupeI.IRetry
-	
 }
 
-func New(fn interface{}, args ...any) *Hupe {
+func New(options circuit.CircuitOptions) (*Hupe, error) {
 
-	retry, err:=retry.New(&shared.Operation{Fn: fn, Args: args})
+	retry, err := retry.New(options.Operation)
 
-	if err!=nil {
+	if err != nil {
 		log.Fatalln("An Error occured", err.Error())
+		return nil, err
 	}
 
-	return &Hupe{retry: retry, circuit: circuit.New()}
+	circuit, err := circuit.New(&options)
+	if err != nil {
+		log.Fatalln("An Error occured", err.Error())
+		return nil, err
+	}
+
+	return &Hupe{retry: retry, circuit: circuit}, nil
 }
 
-/*
-timeout
-operation
-fallback
-
-count
-delay
-threshold
-slidingwindowsize
-*/
+func (h *Hupe) Execute() ([]any, error) {
+	return h.circuit.Execute()
+}

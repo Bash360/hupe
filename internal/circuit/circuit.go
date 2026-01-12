@@ -44,16 +44,47 @@ type CircuitOptions struct {
 	Retry             *hupeI.IRetry
 }
 
-func New() *CircuitBreaker {
+func New(options *CircuitOptions) (*CircuitBreaker, error) {
 
-	return &CircuitBreaker{
-		state:             Open,
-		threshold:         0.5,
-		slidingWindow:     make([]error, 0, defaultWindowSize),
-		timeOut:           time.Duration(time.Second * 10),
-		slidingWindowSize: defaultWindowSize,
-		halfOpenAttempts:  0,
+	c := &CircuitBreaker{
+		state:            Open,
+		halfOpenAttempts: 0,
 	}
+
+	if options.SlidingWindowSize == 0 {
+		options.SlidingWindowSize = defaultWindowSize
+	} else {
+		c.slidingWindowSize = int(options.SlidingWindowSize)
+	}
+
+	if options.Timeout == 0 {
+		options.Timeout = time.Second * 10
+	} else {
+		c.setTimeout(int(options.Timeout))
+	}
+
+	if options.Threshold == 0 {
+		options.Threshold = 0.5
+	}
+	if options.Operation == nil {
+		return nil, errors.New("operation cannot be nil")
+	}
+
+	if options.Fallback != nil {
+		err := c.setFallback(options.Fallback.Fn, options.Fallback.Args...)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	err := c.setThreshold(options.Threshold)
+	if err != nil {
+		return nil, err
+	}
+	c.operation = options.Operation
+	c.slidingWindow = make([]error, 0, options.SlidingWindowSize)
+
+	return c, nil
 
 }
 
@@ -63,7 +94,7 @@ func (c *CircuitBreaker) setState(state int) {
 
 }
 
-func (c *CircuitBreaker) SetThreshold(threshold float64) error {
+func (c *CircuitBreaker) setThreshold(threshold float64) error {
 	if threshold > 0 || threshold < 1 {
 		return ErrThreshold
 	}
@@ -71,7 +102,7 @@ func (c *CircuitBreaker) SetThreshold(threshold float64) error {
 	return nil
 }
 
-func (c *CircuitBreaker) SetFallback(fallback interface{}, args ...any) error {
+func (c *CircuitBreaker) setFallback(fallback interface{}, args ...any) error {
 	err := utils.ValidateArgs(fallback, args...)
 	if err != nil {
 		return err
@@ -81,7 +112,7 @@ func (c *CircuitBreaker) SetFallback(fallback interface{}, args ...any) error {
 	return nil
 }
 
-func (c *CircuitBreaker) SetTimeout(millisecond int) {
+func (c *CircuitBreaker) setTimeout(millisecond int) {
 	c.timeOut = time.Millisecond * time.Duration(millisecond)
 }
 
@@ -105,6 +136,8 @@ func (c *CircuitBreaker) runFallback() []any {
 }
 
 func (c *CircuitBreaker) checkThreshold() bool {
+	c.mux.RLock()
+	defer c.mux.RUnlock()
 	errCount := 0
 
 	for _, v := range c.slidingWindow {
@@ -113,19 +146,18 @@ func (c *CircuitBreaker) checkThreshold() bool {
 		}
 
 	}
-
 	return errCount/len(c.slidingWindow) > int(c.threshold)
 
 }
 
-func (c *CircuitBreaker) AddError(err error) {
-	if errors.As(err, &apperror.Transient{}) {
-		c.addToSlidingWindow(&c.slidingWindow, err, int(c.slidingWindowSize))
+func (c *CircuitBreaker) addError(err error) {
+	if errors.Is(err, apperror.Transient{}) {
+		c.addToSlidingWindow(err)
 	} else {
-		c.addToSlidingWindow(&c.slidingWindow, nil, int(c.slidingWindowSize))
+		c.addToSlidingWindow(nil)
 	}
 
-	if threshold := c.checkThreshold(); threshold {
+	if c.checkThreshold() {
 		c.setState(Open)
 	}
 
@@ -134,22 +166,22 @@ func (c *CircuitBreaker) AddError(err error) {
 func (c *CircuitBreaker) Execute() ([]any, error) {
 	var payload []any
 	var err error
-	if c.state == Open && time.Since(c.lastTrialAt) > c.timeOut {
-		c.setState(HalfOpen)
+
+	if time.Since(c.lastTrialAt) > c.timeOut && atomic.CompareAndSwapInt32(&c.state, int32(Open), HalfOpen) {
 		atomic.StoreInt32(&c.halfOpenAttempts, 0)
 	}
 
-	switch c.state {
+	switch atomic.LoadInt32(&c.state) {
 	case Closed:
-		rety := *c.retry
-		payload, err = rety.Execute()
-		c.AddError(err)
+		retry := *c.retry
+		payload, err = retry.Execute()
+		c.addError(err)
 		return payload, err
 	case Open:
 		payload, err = c.halfOpen()
 
 	case HalfOpen:
-		if time.Since(c.lastTrialAt) > c.timeOut && c.halfOpenAttempts < 1 {
+		if time.Since(c.lastTrialAt) > c.timeOut && atomic.LoadInt32(&c.halfOpenAttempts) < 1 {
 			payload, err = shared.Execute(shared.RetryPolicy{Count: 0, Delay: 0}, c.operation.Fn, c.operation.Args...)
 			atomic.AddInt32(&c.halfOpenAttempts, 1)
 			c.mux.Lock()
@@ -157,7 +189,7 @@ func (c *CircuitBreaker) Execute() ([]any, error) {
 			if err == nil {
 				c.setState(Closed)
 				c.slidingWindow = make([]error, 0, c.slidingWindowSize)
-				c.halfOpenAttempts = 0
+				atomic.StoreInt32(&c.halfOpenAttempts, 0)
 
 			} else {
 				c.setState(Open)
@@ -181,16 +213,15 @@ func (c *CircuitBreaker) halfOpen() ([]any, error) {
 		return nil, c.slidingWindow[len(c.slidingWindow)-1]
 	}
 }
-func (c *CircuitBreaker) addToSlidingWindow(slidingWindow *[]error, err error, windowSize int) {
+func (c *CircuitBreaker) addToSlidingWindow(err error) {
 	c.mux.Lock()
 	defer c.mux.Unlock()
-	window := *slidingWindow
-	if len(window) < windowSize {
-		*slidingWindow = append(window, err)
+	if len(c.slidingWindow) < c.slidingWindowSize {
+		c.slidingWindow = append(c.slidingWindow, err)
 
 	} else {
-		copy(window[:], window[1:])
-		window[windowSize-1] = err
+		copy(c.slidingWindow[:], c.slidingWindow[1:])
+		c.slidingWindow[c.slidingWindowSize-1] = err
 
 	}
 
