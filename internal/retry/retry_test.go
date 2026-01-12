@@ -8,7 +8,7 @@ import (
 
 	"github.com/bash360/hupe/internal/shared"
 	"github.com/bash360/hupe/pkg/apperror"
-	"github.com/bash360/hupe/pkg/hupe"
+	hupeI "github.com/bash360/hupe/pkg/hupe/interface"
 )
 
 func TestConstructor(t *testing.T) {
@@ -19,7 +19,7 @@ func TestConstructor(t *testing.T) {
 
 	type want struct {
 		err   error
-		retry hupe.IRetry
+		retry hupeI.IRetry
 	}
 	tests := []struct {
 		name    string

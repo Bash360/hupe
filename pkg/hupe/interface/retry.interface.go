@@ -1,4 +1,4 @@
-package hupe
+package hupeI
 
 type IRetry interface {
 	WithDelay(delay uint) IRetry
